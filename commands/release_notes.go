@@ -70,17 +70,17 @@ func getReleasesArgument() []components.Argument {
 func getReleaseNotesFlags() []components.Flag {
 	return []components.Flag{
 		components.BoolFlag{
-			Name:         "Current",
+			Name:         "current",
 			Description:  "Get release notes for the default Current Product Version - only <Product> argument should be provided",
 			DefaultValue: false,
 		},
 		components.BoolFlag{
-			Name:         "Date",
+			Name:         "date",
 			Description:  "Get only the Date of jfrog Product and Version release",
 			DefaultValue: false,
 		},
 		components.StringFlag{
-			Name:        "Version",
+			Name:        "version",
 			Description: "Version of the Product",
 			Mandatory:   false,
 		},
@@ -110,23 +110,23 @@ func releaseNotesCmd(c *components.Context) error {
 func extractAllArgsAndFlags(c *components.Context) (*ReleaseNotesConfiguration, error) {
 	var conf = &ReleaseNotesConfiguration{}
 	// get all flags
-	if c.GetBoolFlagValue("Current") {
+	if c.GetBoolFlagValue("current") {
 		if len(c.Arguments) != 1 {
 			return nil, errors.New("Wrong number of arguments. -Current flag Expected: 1 argument: 'Product' " + "Received: " + strconv.Itoa(len(c.Arguments)))
 		}
 		conf.Current = true
 	}
-	if c.GetBoolFlagValue("Date") {
+	if c.GetBoolFlagValue("date") {
 		conf.Date = true
 	}
-	if len(c.GetStringFlagValue("Version")) > 0 {
-		conf.Version = c.GetStringFlagValue("Version")
+	if len(c.GetStringFlagValue("version")) > 0 {
+		conf.Version = c.GetStringFlagValue("version")
 	}
 	// get all arguments
 	if len(c.Arguments) == 2 {
 		conf.Product = c.Arguments[0]
 		conf.Version = c.Arguments[1]
-	} else if len(c.Arguments) == 1 && (len(c.GetStringFlagValue("Version")) > 0 || c.GetBoolFlagValue("Current")) {
+	} else if len(c.Arguments) == 1 && (len(c.GetStringFlagValue("version")) > 0 || c.GetBoolFlagValue("current")) {
 		conf.Product = c.Arguments[0]
 	} else {
 		return nil, errors.New("Wrong number of arguments. Expected: 1 or 2, " + "Received: " + strconv.Itoa(len(c.Arguments)))
@@ -225,7 +225,7 @@ func getArtiVersion(rtDetails *config.ArtifactoryDetails) (string, error) {
 //support 3.x only
 func getXrayVersion(rtDetails *config.ArtifactoryDetails) (string, error) {
 	xrayUrl := fmt.Sprintf("%s/%s",
-		strings.TrimSuffix(rtDetails.Url[:strings.LastIndex(strings.TrimSuffix(rtDetails.Url, "/"), "/")], "/"), "xray/api/v1/system/Version")
+		strings.TrimSuffix(rtDetails.Url[:strings.LastIndex(strings.TrimSuffix(rtDetails.Url, "/"), "/")], "/"), "xray/api/v1/system/version")
 	client, err := httpclient.ClientBuilder().Build()
 	if err != nil {
 		return "", errors.New(fmt.Sprintf("Failed to get Release notes for Xray: %v", err))
@@ -261,6 +261,6 @@ func extractReleasedDate(fullReleaseNotes string, version string) (string, error
 		return "", errors.New(fmt.Sprintf("Couldnt find Date for release Date for Version %s", version))
 	}
 	releaseDateStart := fullReleaseNotes[indexOfReleaseDate:]
-	indexLastOfDate := strings.Index(releaseDateStart, "####")
+	indexLastOfDate := strings.Index(releaseDateStart, "#")
 	return strings.TrimSpace(releaseDateStart[:indexLastOfDate]), nil
 }
