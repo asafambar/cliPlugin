@@ -1,24 +1,53 @@
 package commands
 
 import (
+	"github.com/jfrog/jfrog-cli-core/plugins/components"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
-func TestSimpleHello(t *testing.T) {
-	conf := &releaseNotesConfiguration{
-		addressee: "World",
-		repeat:    1,
+func Test_extractAllArgsAndFlags(t *testing.T) {
+	tcs := []struct {
+		name             string
+		arguments        []string
+		expectedError    bool
+		ExpectedResponse *ReleaseNotesConfiguration
+	}{
+		{
+			name:      "product and version - valid",
+			arguments: []string{"artifactory", "7.11.2"},
+			ExpectedResponse: &ReleaseNotesConfiguration{
+				Product: "artifactory",
+				Version: "7.11.2",
+				Current: false,
+				Date:    false,
+			},
+		},
+		{
+			name:             "too many args - expect error",
+			arguments:        []string{"artifactory", "7.11.2", "xray"},
+			ExpectedResponse: nil,
+			expectedError:    true,
+		},
+		{
+			name:             "product only - expect error",
+			arguments:        []string{"artifactory"},
+			ExpectedResponse: nil,
+			expectedError:    true,
+		},
 	}
-	assert.Equal(t, doGetReleaseNotes(conf), "Hello World!")
-}
+	for _, tc := range tcs {
+		cmpctx := &components.Context{
+			Arguments: tc.arguments,
+		}
+		rc, err := extractAllArgsAndFlags(cmpctx)
+		if tc.expectedError {
+			require.Error(t, err)
+		} else {
+			require.NoError(t, err)
+		}
+		assert.Equal(t, tc.ExpectedResponse, rc)
+	}
 
-func TestComplexHello(t *testing.T) {
-	conf := &releaseNotesConfiguration{
-		addressee: "World",
-		repeat:    3,
-		shout:     true,
-		prefix:    "test: ",
-	}
-	assert.Equal(t, doGetReleaseNotes(conf), "TEST: HELLO WORLD!\nTEST: HELLO WORLD!\nTEST: HELLO WORLD!")
 }
