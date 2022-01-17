@@ -35,7 +35,7 @@ Since this plugin is currently not included in [JFrog CLI Plugins Registry](http
   #### Feature Enhancements
    ......
   
-  rsult2:
+  result2:
 
   ### Artifactory 7.11.5
   
